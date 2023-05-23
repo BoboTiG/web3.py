@@ -177,9 +177,10 @@ def type_aware_apply_formatters_to_dict_keys_and_values(
     """
     Preserve ``AttributeDict`` types if original ``value`` was an ``AttributeDict``.
     """
-    formatted_dict = dict(
-        (key_formatters(k), value_formatters(v)) for k, v in dict_like_object.items()
-    )
+    formatted_dict = {
+        key_formatters(k): value_formatters(v)
+        for k, v in dict_like_object.items()
+    }
     return (
         AttributeDict.recursive(formatted_dict)
         if is_attrdict(dict_like_object)
@@ -737,16 +738,15 @@ def raise_contract_logic_error_on_revert(response: RPCResponse) -> RPCResponse:
         # "Reverted", function selector and offset are always the same for revert errors
         prefix = "Reverted 0x08c379a00000000000000000000000000000000000000000000000000000000000000020"  # noqa: 501
         if not data.startswith(prefix):
-            if data.startswith("Reverted 0x"):
-                # Special case for this form: 'Reverted 0x...'
-                receipt = data.split(" ")[1][2:]
-                revert_reason = bytes.fromhex(receipt).decode("utf-8")
-                raise ContractLogicError(
-                    f"execution reverted: {revert_reason}", data=data
-                )
-            else:
+            if not data.startswith("Reverted 0x"):
                 raise ContractLogicError("execution reverted", data=data)
 
+            # Special case for this form: 'Reverted 0x...'
+            receipt = data.split(" ")[1][2:]
+            revert_reason = bytes.fromhex(receipt).decode("utf-8")
+            raise ContractLogicError(
+                f"execution reverted: {revert_reason}", data=data
+            )
         reason_length = int(data[len(prefix) : len(prefix) + 64], 16)
         reason = data[len(prefix) + 64 : len(prefix) + 64 + reason_length * 2]
         raise ContractLogicError(
@@ -770,7 +770,7 @@ def raise_contract_logic_error_on_revert(response: RPCResponse) -> RPCResponse:
     # Solidity 0.8.4 introduced custom error messages that allow args to
     # be passed in (or not). See:
     # https://blog.soliditylang.org/2021/04/21/custom-errors/
-    if len(data) >= 10 and not data[:10] == "0x08c379a0":
+    if len(data) >= 10 and data[:10] != "0x08c379a0":
         # Raise with data as both the message and the data for backwards
         # compatibility and so that data can be accessed via 'data' attribute
         # on the ContractCustomError exception

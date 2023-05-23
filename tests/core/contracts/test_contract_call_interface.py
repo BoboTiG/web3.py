@@ -99,8 +99,7 @@ def undeployed_math_contract(math_contract_factory, address_conversion_func):
     empty_address = address_conversion_func(
         "0x000000000000000000000000000000000000dEaD"
     )
-    _undeployed_math_contract = math_contract_factory(address=empty_address)
-    return _undeployed_math_contract
+    return math_contract_factory(address=empty_address)
 
 
 @pytest.fixture
@@ -111,8 +110,7 @@ def mismatched_math_contract(
     deploy_receipt = w3.eth.wait_for_transaction_receipt(deploy_txn)
     assert deploy_receipt is not None
     address = address_conversion_func(deploy_receipt["contractAddress"])
-    _mismatched_math_contract = math_contract_factory(address=address)
-    return _mismatched_math_contract
+    return math_contract_factory(address=address)
 
 
 def test_deploy_raises_due_to_strict_byte_checking_by_default(
@@ -1190,8 +1188,7 @@ async def async_undeployed_math_contract(
     empty_address = address_conversion_func(
         "0x000000000000000000000000000000000000dEaD"
     )
-    _undeployed_math_contract = async_math_contract_factory(address=empty_address)
-    return _undeployed_math_contract
+    return async_math_contract_factory(address=empty_address)
 
 
 @pytest_asyncio.fixture
@@ -1205,8 +1202,7 @@ async def async_mismatched_math_contract(
     deploy_receipt = await async_w3.eth.wait_for_transaction_receipt(deploy_txn)
     assert deploy_receipt is not None
     address = address_conversion_func(deploy_receipt["contractAddress"])
-    _mismatched_math_contract = async_math_contract_factory(address=address)
-    return _mismatched_math_contract
+    return async_math_contract_factory(address=address)
 
 
 @pytest.fixture

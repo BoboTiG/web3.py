@@ -146,7 +146,7 @@ def test_setup_reverse_dict_unmodified(ens):
 
     # even though a transaction was issued, the dict argument was not modified
     assert eth.get_transaction_count(owner) > start_count
-    assert transact == {}
+    assert not transact
 
     # teardown
     ens.setup_name(None, address, transact=transact)
@@ -238,7 +238,7 @@ async def test_async_setup_reverse_dict_unmodified(async_ens):
 
     # even though a transaction was issued, the dict argument was not modified
     assert await eth.get_transaction_count(owner) > start_count
-    assert transact == {}
+    assert not transact
 
     # teardown
     await async_ens.setup_name(None, address, transact=transact)

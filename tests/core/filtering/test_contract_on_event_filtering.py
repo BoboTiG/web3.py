@@ -37,11 +37,7 @@ def test_on_filter_using_get_entries_interface(
     api_style,
     create_filter,
 ):
-    if call_deployed_contract:
-        contract = emitter
-    else:
-        contract = emitter_contract_factory
-
+    contract = emitter if call_deployed_contract else emitter_contract_factory
     if api_style == "build_filter":
         event_filter = contract.events.LogNoArguments.build_filter().deploy(w3)
     else:
@@ -73,11 +69,7 @@ def test_on_sync_filter_with_event_name_and_single_argument(
     api_style,
     create_filter,
 ):
-    if call_deployed_contract:
-        contract = emitter
-    else:
-        contract = emitter_contract_factory
-
+    contract = emitter if call_deployed_contract else emitter_contract_factory
     if api_style == "build_filter":
         builder = contract.events.LogTripleWithIndex.build_filter()
         builder.args["arg1"].match_single(2)
@@ -95,11 +87,12 @@ def test_on_sync_filter_with_event_name_and_single_argument(
             ],
         )
 
-    txn_hashes = []
     event_id = emitter_contract_event_ids.LogTripleWithIndex
-    txn_hashes.append(emitter.functions.logTriple(event_id, 2, 1, 3).transact())
-    txn_hashes.append(emitter.functions.logTriple(event_id, 1, 2, 3).transact())
-    txn_hashes.append(emitter.functions.logTriple(event_id, 12345, 2, 54321).transact())
+    txn_hashes = [
+        emitter.functions.logTriple(event_id, 2, 1, 3).transact(),
+        emitter.functions.logTriple(event_id, 1, 2, 3).transact(),
+        emitter.functions.logTriple(event_id, 12345, 2, 54321).transact(),
+    ]
     for txn_hash in txn_hashes:
         wait_for_transaction(w3, txn_hash)
 
@@ -120,11 +113,7 @@ def test_on_sync_filter_with_event_name_and_non_indexed_argument(
     api_style,
     create_filter,
 ):
-    if call_deployed_contract:
-        contract = emitter
-    else:
-        contract = emitter_contract_factory
-
+    contract = emitter if call_deployed_contract else emitter_contract_factory
     if api_style == "build_filter":
         builder = contract.events.LogTripleWithIndex.build_filter()
         builder.args["arg0"].match_single(1)
@@ -144,11 +133,12 @@ def test_on_sync_filter_with_event_name_and_non_indexed_argument(
             ],
         )
 
-    txn_hashes = []
     event_id = emitter_contract_event_ids.LogTripleWithIndex
-    txn_hashes.append(emitter.functions.logTriple(event_id, 2, 1, 3).transact())
-    txn_hashes.append(emitter.functions.logTriple(event_id, 1, 2, 3).transact())
-    txn_hashes.append(emitter.functions.logTriple(event_id, 12345, 2, 54321).transact())
+    txn_hashes = [
+        emitter.functions.logTriple(event_id, 2, 1, 3).transact(),
+        emitter.functions.logTriple(event_id, 1, 2, 3).transact(),
+        emitter.functions.logTriple(event_id, 12345, 2, 54321).transact(),
+    ]
     for txn_hash in txn_hashes:
         wait_for_transaction(w3, txn_hash)
 
@@ -189,21 +179,18 @@ def test_on_sync_filter_with_topic_filter_options_on_old_apis(
     call_deployed_contract,
     create_filter,
 ):
-    if call_deployed_contract:
-        contract = emitter
-    else:
-        contract = emitter_contract_factory
-
+    contract = emitter if call_deployed_contract else emitter_contract_factory
     event_filter = create_filter(
         contract, ["LogTripleWithIndex", {"filter": {"arg1": [1, 2], "arg2": [1, 2]}}]
     )
 
-    txn_hashes = []
     event_id = emitter_contract_event_ids.LogTripleWithIndex
-    txn_hashes.append(emitter.functions.logTriple(event_id, 1, 1, 1).transact())
-    txn_hashes.append(emitter.functions.logTriple(event_id, 1, 1, 2).transact())
-    txn_hashes.append(emitter.functions.logTriple(event_id, 1, 2, 2).transact())
-    txn_hashes.append(emitter.functions.logTriple(event_id, 1, 2, 1).transact())
+    txn_hashes = [
+        emitter.functions.logTriple(event_id, 1, 1, 1).transact(),
+        emitter.functions.logTriple(event_id, 1, 1, 2).transact(),
+        emitter.functions.logTriple(event_id, 1, 2, 2).transact(),
+        emitter.functions.logTriple(event_id, 1, 2, 1).transact(),
+    ]
     for txn_hash in txn_hashes:
         wait_for_transaction(w3, txn_hash)
 
@@ -327,17 +314,14 @@ async def test_on_async_filter_with_event_name_and_single_argument(
             ],
         )
 
-    txn_hashes = []
     event_id = emitter_contract_event_ids.LogTripleWithIndex
-    txn_hashes.append(
-        await async_emitter.functions.logTriple(event_id, 2, 1, 3).transact()
-    )
-    txn_hashes.append(
-        await async_emitter.functions.logTriple(event_id, 1, 2, 3).transact()
-    )
-    txn_hashes.append(
-        await async_emitter.functions.logTriple(event_id, 12345, 2, 54321).transact()
-    )
+    txn_hashes = [
+        await async_emitter.functions.logTriple(event_id, 2, 1, 3).transact(),
+        await async_emitter.functions.logTriple(event_id, 1, 2, 3).transact(),
+        await async_emitter.functions.logTriple(
+            event_id, 12345, 2, 54321
+        ).transact(),
+    ]
     for txn_hash in txn_hashes:
         await async_wait_for_transaction(async_w3, txn_hash)
 
@@ -383,17 +367,14 @@ async def test_on_async_filter_with_event_name_and_non_indexed_argument(
             ],
         )
 
-    txn_hashes = []
     event_id = emitter_contract_event_ids.LogTripleWithIndex
-    txn_hashes.append(
-        await async_emitter.functions.logTriple(event_id, 2, 1, 3).transact()
-    )
-    txn_hashes.append(
-        await async_emitter.functions.logTriple(event_id, 1, 2, 3).transact()
-    )
-    txn_hashes.append(
-        await async_emitter.functions.logTriple(event_id, 12345, 2, 54321).transact()
-    )
+    txn_hashes = [
+        await async_emitter.functions.logTriple(event_id, 2, 1, 3).transact(),
+        await async_emitter.functions.logTriple(event_id, 1, 2, 3).transact(),
+        await async_emitter.functions.logTriple(
+            event_id, 12345, 2, 54321
+        ).transact(),
+    ]
     for txn_hash in txn_hashes:
         await async_wait_for_transaction(async_w3, txn_hash)
 
@@ -447,20 +428,13 @@ async def test_on_async_filter_with_topic_filter_options_on_old_apis(
         contract, ["LogTripleWithIndex", {"filter": {"arg1": [1, 2], "arg2": [1, 2]}}]
     )
 
-    txn_hashes = []
     event_id = emitter_contract_event_ids.LogTripleWithIndex
-    txn_hashes.append(
-        await async_emitter.functions.logTriple(event_id, 1, 1, 1).transact()
-    )
-    txn_hashes.append(
-        await async_emitter.functions.logTriple(event_id, 1, 1, 2).transact()
-    )
-    txn_hashes.append(
-        await async_emitter.functions.logTriple(event_id, 1, 2, 2).transact()
-    )
-    txn_hashes.append(
-        await async_emitter.functions.logTriple(event_id, 1, 2, 1).transact()
-    )
+    txn_hashes = [
+        await async_emitter.functions.logTriple(event_id, 1, 1, 1).transact(),
+        await async_emitter.functions.logTriple(event_id, 1, 1, 2).transact(),
+        await async_emitter.functions.logTriple(event_id, 1, 2, 2).transact(),
+        await async_emitter.functions.logTriple(event_id, 1, 2, 1).transact(),
+    ]
     for txn_hash in txn_hashes:
         await async_wait_for_transaction(async_w3, txn_hash)
 

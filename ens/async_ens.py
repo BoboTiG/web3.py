@@ -569,6 +569,9 @@ async def _async_resolver_supports_interface(
     resolver: "AsyncContract",
     interface_id: HexStr,
 ) -> bool:
-    if not any("supportsInterface" in repr(func) for func in resolver.all_functions()):
+    if all(
+        "supportsInterface" not in repr(func)
+        for func in resolver.all_functions()
+    ):
         return False
     return await resolver.caller.supportsInterface(interface_id)

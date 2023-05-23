@@ -240,7 +240,7 @@ def address_in(
 
 def address_to_reverse_domain(address: ChecksumAddress) -> str:
     lower_unprefixed_address = remove_0x_prefix(HexStr(to_normalized_address(address)))
-    return lower_unprefixed_address + "." + REVERSE_REGISTRAR_DOMAIN
+    return f"{lower_unprefixed_address}.{REVERSE_REGISTRAR_DOMAIN}"
 
 
 def estimate_auction_start_gas(labels: Collection[str]) -> int:
@@ -270,10 +270,7 @@ def is_valid_ens_name(ens_name: str) -> bool:
     split_domain = ens_name.split(".")
     if len(split_domain) == 1:
         return False
-    for name in split_domain:
-        if not is_valid_name(name):
-            return False
-    return True
+    return all(is_valid_name(name) for name in split_domain)
 
 
 # borrowed from similar method at `web3._utils.abi` due to circular dependency
@@ -307,19 +304,18 @@ def init_async_web3(
     if "stalecheck" not in (name for mw, name in middlewares):
         middlewares.append((_async_ens_stalecheck_middleware, "stalecheck"))
 
-    if provider is default:
-        async_w3 = AsyncWeb3Main(
+    return (
+        AsyncWeb3Main(
             middlewares=middlewares, ens=None, modules={"eth": (AsyncEthMain)}
         )
-    else:
-        async_w3 = AsyncWeb3Main(
+        if provider is default
+        else AsyncWeb3Main(
             provider,
             middlewares=middlewares,
             ens=None,
             modules={"eth": (AsyncEthMain)},
         )
-
-    return async_w3
+    )
 
 
 async def _async_ens_stalecheck_middleware(

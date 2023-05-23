@@ -100,12 +100,11 @@ class BaseEth(Module):
         if "from" not in transaction and is_checksum_address(self.default_account):
             transaction = assoc(transaction, "from", self.default_account)
 
-        if block_identifier is None:
-            params: Sequence[Union[TxParams, BlockIdentifier]] = [transaction]
-        else:
-            params = [transaction, block_identifier]
-
-        return params
+        return (
+            [transaction]
+            if block_identifier is None
+            else [transaction, block_identifier]
+        )
 
     def get_block_munger(
         self, block_identifier: BlockIdentifier, full_transactions: bool = False

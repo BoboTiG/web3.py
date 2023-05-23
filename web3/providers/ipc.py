@@ -91,22 +91,13 @@ def get_default_ipc_path() -> Optional[str]:
         ipc_path = os.path.expanduser(
             os.path.join("~", "Library", "Ethereum", "geth.ipc")
         )
-        if os.path.exists(ipc_path):
-            return ipc_path
-        return None
-
+        return ipc_path if os.path.exists(ipc_path) else None
     elif sys.platform.startswith("linux") or sys.platform.startswith("freebsd"):
         ipc_path = os.path.expanduser(os.path.join("~", ".ethereum", "geth.ipc"))
-        if os.path.exists(ipc_path):
-            return ipc_path
-        return None
-
+        return ipc_path if os.path.exists(ipc_path) else None
     elif sys.platform == "win32":
         ipc_path = os.path.join("\\\\", ".", "pipe", "geth.ipc")
-        if os.path.exists(ipc_path):
-            return ipc_path
-        return None
-
+        return ipc_path if os.path.exists(ipc_path) else None
     else:
         raise ValueError(
             f"Unsupported platform '{sys.platform}'.  Only darwin/linux/win32/"
@@ -117,23 +108,14 @@ def get_default_ipc_path() -> Optional[str]:
 def get_dev_ipc_path() -> Optional[str]:
     if os.environ.get("WEB3_PROVIDER_URI", ""):
         ipc_path = os.environ.get("WEB3_PROVIDER_URI")
-        if os.path.exists(ipc_path):
-            return ipc_path
-        return None
-
+        return ipc_path if os.path.exists(ipc_path) else None
     elif sys.platform == "darwin":
         tmpdir = os.environ.get("TMPDIR", "")
         ipc_path = os.path.expanduser(os.path.join(tmpdir, "geth.ipc"))
-        if os.path.exists(ipc_path):
-            return ipc_path
-        return None
-
+        return ipc_path if os.path.exists(ipc_path) else None
     elif sys.platform.startswith("linux") or sys.platform.startswith("freebsd"):
         ipc_path = os.path.expanduser(os.path.join("/tmp", "geth.ipc"))
-        if os.path.exists(ipc_path):
-            return ipc_path
-        return None
-
+        return ipc_path if os.path.exists(ipc_path) else None
     elif sys.platform == "win32":
         ipc_path = os.path.join("\\\\", ".", "pipe", "geth.ipc")
         if os.path.exists(ipc_path):
@@ -163,7 +145,7 @@ class IPCProvider(JSONBaseProvider):
     ) -> None:
         if ipc_path is None:
             self.ipc_path = get_default_ipc_path()
-        elif isinstance(ipc_path, str) or isinstance(ipc_path, Path):
+        elif isinstance(ipc_path, (str, Path)):
             self.ipc_path = str(Path(ipc_path).expanduser().resolve())
         else:
             raise TypeError("ipc_path must be of type string or pathlib.Path")
@@ -182,7 +164,7 @@ class IPCProvider(JSONBaseProvider):
         )
         request = self.encode_rpc_request(method, params)
 
-        with self._lock, self._socket as sock:
+        with (self._lock, self._socket as sock):
             try:
                 sock.sendall(request)
             except BrokenPipeError:
@@ -198,9 +180,13 @@ class IPCProvider(JSONBaseProvider):
                     except socket.timeout:
                         timeout.sleep(0)
                         continue
-                    if raw_response == b"":
+                    if (
+                        raw_response == b""
+                        or raw_response != b""
+                        and not has_valid_json_rpc_ending(raw_response)
+                    ):
                         timeout.sleep(0)
-                    elif has_valid_json_rpc_ending(raw_response):
+                    else:
                         try:
                             response = self.decode_rpc_response(raw_response)
                         except JSONDecodeError:
@@ -208,9 +194,6 @@ class IPCProvider(JSONBaseProvider):
                             continue
                         else:
                             return response
-                    else:
-                        timeout.sleep(0)
-                        continue
 
 
 # A valid JSON RPC response can only end in } or ] http://www.jsonrpc.org/specification

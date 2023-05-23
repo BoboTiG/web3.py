@@ -60,26 +60,26 @@ async def async_construct_simple_cache_middleware(
         cache = SimpleCache(256)
 
     async def async_simple_cache_middleware(
-        make_request: Callable[[RPCEndpoint, Any], Any], _async_w3: "AsyncWeb3"
-    ) -> AsyncMiddlewareCoroutine:
+            make_request: Callable[[RPCEndpoint, Any], Any], _async_w3: "AsyncWeb3"
+        ) -> AsyncMiddlewareCoroutine:
         lock = threading.Lock()
 
         async def middleware(method: RPCEndpoint, params: Any) -> RPCResponse:
-            if method in rpc_whitelist:
-                cache_key = generate_cache_key(
-                    f"{threading.get_ident()}:{(method, params)}"
-                )
-                cached_request = cache.get_cache_entry(cache_key)
-                if cached_request is not None:
-                    return cached_request
-
-                response = await make_request(method, params)
-                if should_cache_fn(method, params, response):
-                    async with async_lock(_async_request_thread_pool, lock):
-                        cache.cache(cache_key, response)
-                return response
-            else:
+            if method not in rpc_whitelist:
                 return await make_request(method, params)
+
+            cache_key = generate_cache_key(
+                f"{threading.get_ident()}:{(method, params)}"
+            )
+            cached_request = cache.get_cache_entry(cache_key)
+            if cached_request is not None:
+                return cached_request
+
+            response = await make_request(method, params)
+            if should_cache_fn(method, params, response):
+                async with async_lock(_async_request_thread_pool, lock):
+                    cache.cache(cache_key, response)
+            return response
 
         return middleware
 

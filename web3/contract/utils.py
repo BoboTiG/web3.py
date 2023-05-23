@@ -138,10 +138,7 @@ def call_contract_function(
         decoded = named_tree(fn_abi["outputs"], normalized_data)
         normalized_data = recursive_dict_to_namedtuple(decoded)
 
-    if len(normalized_data) == 1:
-        return normalized_data[0]
-    else:
-        return normalized_data
+    return normalized_data[0] if len(normalized_data) == 1 else normalized_data
 
 
 def transact_with_contract_function(
@@ -169,8 +166,7 @@ def transact_with_contract_function(
         fn_kwargs=kwargs,
     )
 
-    txn_hash = w3.eth.send_transaction(transact_transaction)
-    return txn_hash
+    return w3.eth.send_transaction(transact_transaction)
 
 
 def estimate_gas_for_function(
@@ -346,10 +342,7 @@ async def async_call_contract_function(
         decoded = named_tree(fn_abi["outputs"], normalized_data)
         normalized_data = recursive_dict_to_namedtuple(decoded)
 
-    if len(normalized_data) == 1:
-        return normalized_data[0]
-    else:
-        return normalized_data
+    return normalized_data[0] if len(normalized_data) == 1 else normalized_data
 
 
 async def async_transact_with_contract_function(
@@ -377,8 +370,7 @@ async def async_transact_with_contract_function(
         fn_kwargs=kwargs,
     )
 
-    txn_hash = await async_w3.eth.send_transaction(transact_transaction)
-    return txn_hash
+    return await async_w3.eth.send_transaction(transact_transaction)
 
 
 async def async_estimate_gas_for_function(

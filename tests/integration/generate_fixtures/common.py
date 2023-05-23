@@ -194,13 +194,12 @@ def get_geth_process(
 
 
 def get_process(run_command):
-    proc = subprocess.Popen(
+    return subprocess.Popen(
         run_command,
         stdin=subprocess.PIPE,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
     )
-    return proc
 
 
 def mine_block(w3):

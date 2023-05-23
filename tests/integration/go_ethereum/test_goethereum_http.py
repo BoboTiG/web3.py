@@ -77,8 +77,7 @@ def geth_command_arguments(rpc_port, base_geth_command_arguments, get_geth_versi
 @pytest.fixture(scope="module")
 def w3(geth_process, endpoint_uri):
     wait_for_http(endpoint_uri)
-    _w3 = Web3(Web3.HTTPProvider(endpoint_uri))
-    return _w3
+    return Web3(Web3.HTTPProvider(endpoint_uri))
 
 
 class TestGoEthereumTest(GoEthereumTest):
@@ -127,8 +126,7 @@ class TestGoEthereumTxPoolModuleTest(GoEthereumTxPoolModuleTest):
 @pytest_asyncio.fixture(scope="module")
 async def async_w3(geth_process, endpoint_uri):
     await wait_for_aiohttp(endpoint_uri)
-    _w3 = AsyncWeb3(AsyncHTTPProvider(endpoint_uri))
-    return _w3
+    return AsyncWeb3(AsyncHTTPProvider(endpoint_uri))
 
 
 class TestGoEthereumAsyncAdminModuleTest(GoEthereumAsyncAdminModuleTest):

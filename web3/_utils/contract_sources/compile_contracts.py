@@ -80,11 +80,10 @@ files_to_compile = [user_filename] if user_filename else all_dot_sol_files
 
 
 def _compile_dot_sol_files(dot_sol_filename: str) -> dict[str, Any]:
-    compiled = solcx.compile_files(
+    return solcx.compile_files(
         [f"./{dot_sol_filename}"],
         output_values=["abi", "bin", "bin-runtime"],
     )
-    return compiled
 
 
 def _get_compiled_contract_data(
@@ -96,7 +95,7 @@ def _get_compiled_contract_data(
         contract_name = dot_sol_filename.replace(".sol", "")
 
     contract_data = None
-    for key in sol_file_output.keys():
+    for key in sol_file_output:
         if f":{contract_name}" in key:
             contract_data = sol_file_output[key]
     if not contract_data:
