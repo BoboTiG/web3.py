@@ -302,10 +302,7 @@ class BaseWeb3:
                 f"{len(abi_types)} types and {len(values)} values."
             )
 
-        if isinstance(cls, type):
-            w3 = None
-        else:
-            w3 = cls
+        w3 = None if isinstance(cls, type) else cls
         normalized_values = cls.normalize_values(w3, abi_types, values)
 
         hex_string = add_0x_prefix(

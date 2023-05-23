@@ -402,9 +402,7 @@ def invoke_contract(
         )
 
     function = contract.functions[contract_function]
-    result = getattr(function(*func_args, **func_kwargs), api_call_desig)(tx_params)
-
-    return result
+    return getattr(function(*func_args, **func_kwargs), api_call_desig)(tx_params)
 
 
 @pytest.fixture
@@ -660,11 +658,9 @@ async def async_invoke_contract(
         )
 
     function = contract.functions[contract_function]
-    result = await getattr(function(*func_args, **func_kwargs), api_call_desig)(
+    return await getattr(function(*func_args, **func_kwargs), api_call_desig)(
         tx_params
     )
-
-    return result
 
 
 @pytest.fixture

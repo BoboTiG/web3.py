@@ -127,7 +127,6 @@ class JSONBaseProvider(BaseProvider):
 
         if response["jsonrpc"] == "2.0":
             return True
-        else:
-            if show_traceback:
-                raise ProviderConnectionError(f"Bad jsonrpc version: {response}")
-            return False
+        if show_traceback:
+            raise ProviderConnectionError(f"Bad jsonrpc version: {response}")
+        return False

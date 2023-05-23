@@ -30,9 +30,7 @@ SKIP_STALECHECK_FOR_METHODS = ("eth_getBlockByNumber",)
 
 
 def _is_fresh(block: BlockData, allowable_delay: int) -> bool:
-    if block and (time.time() - block["timestamp"] <= allowable_delay):
-        return True
-    return False
+    return bool(block and (time.time() - block["timestamp"] <= allowable_delay))
 
 
 def make_stalecheck_middleware(

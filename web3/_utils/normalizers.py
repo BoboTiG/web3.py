@@ -72,10 +72,7 @@ def implicitly_identity(
     @functools.wraps(to_wrap)
     def wrapper(type_str: TypeStr, data: Any) -> Tuple[TypeStr, Any]:
         modified = to_wrap(type_str, data)
-        if modified is None:
-            return type_str, data
-        else:
-            return modified
+        return (type_str, data) if modified is None else modified
 
     return wrapper
 
@@ -89,9 +86,7 @@ def implicitly_identity(
 def addresses_checksummed(
     type_str: TypeStr, data: Any
 ) -> Tuple[TypeStr, ChecksumAddress]:
-    if type_str == "address":
-        return type_str, to_checksum_address(data)
-    return None
+    return (type_str, to_checksum_address(data)) if type_str == "address" else None
 
 
 @implicitly_identity
@@ -167,16 +162,12 @@ def abi_int_to_hex(
 
 @implicitly_identity
 def abi_string_to_hex(type_str: TypeStr, data: Any) -> Optional[Tuple[TypeStr, str]]:
-    if type_str == "string":
-        return type_str, text_if_str(to_hex, data)
-    return None
+    return (type_str, text_if_str(to_hex, data)) if type_str == "string" else None
 
 
 @implicitly_identity
 def abi_string_to_text(type_str: TypeStr, data: Any) -> Optional[Tuple[TypeStr, str]]:
-    if type_str == "string":
-        return type_str, text_if_str(to_text, data)
-    return None
+    return (type_str, text_if_str(to_text, data)) if type_str == "string" else None
 
 
 @implicitly_identity
@@ -206,28 +197,27 @@ def abi_ens_resolver(
     type_str: TypeStr,
     val: Any,
 ) -> Tuple[TypeStr, Any]:
-    if type_str == "address" and is_ens_name(val):
-        if w3 is None:
-            raise InvalidAddress(
-                f"Could not look up name {val!r} because no web3"
-                " connection available"
-            )
-
-        _ens = cast(ENS, w3.ens)
-        net_version = int(w3.net.version) if hasattr(w3, "net") else None
-        if _ens is None:
-            raise InvalidAddress(
-                f"Could not look up name {val!r} because ENS is" " set to None"
-            )
-        elif net_version != 1 and not isinstance(_ens, StaticENS):
-            raise InvalidAddress(
-                f"Could not look up name {val!r} because web3 is"
-                " not connected to mainnet"
-            )
-        else:
-            return type_str, validate_name_has_address(_ens, val)
-    else:
+    if type_str != "address" or not is_ens_name(val):
         return type_str, val
+    if w3 is None:
+        raise InvalidAddress(
+            f"Could not look up name {val!r} because no web3"
+            " connection available"
+        )
+
+    _ens = cast(ENS, w3.ens)
+    net_version = int(w3.net.version) if hasattr(w3, "net") else None
+    if _ens is None:
+        raise InvalidAddress(
+            f"Could not look up name {val!r} because ENS is" " set to None"
+        )
+    elif net_version != 1 and not isinstance(_ens, StaticENS):
+        raise InvalidAddress(
+            f"Could not look up name {val!r} because web3 is"
+            " not connected to mainnet"
+        )
+    else:
+        return type_str, validate_name_has_address(_ens, val)
 
 
 BASE_RETURN_NORMALIZERS = [

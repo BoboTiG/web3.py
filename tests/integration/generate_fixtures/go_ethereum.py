@@ -337,12 +337,14 @@ def setup_chain_state(w3):
     block_with_txn = w3.eth.get_block(mined_txn_receipt["blockHash"])
     print("BLOCK_WITH_TXN_HASH:", block_with_txn["hash"])
 
-    geth_fixture = {
+    return {
         "math_deploy_txn_hash": math_deploy_receipt["transactionHash"],
         "math_address": math_deploy_receipt["contractAddress"],
         "emitter_deploy_txn_hash": emitter_deploy_receipt["transactionHash"],
         "emitter_address": emitter_deploy_receipt["contractAddress"],
-        "offchain_lookup_address": offchain_lookup_deploy_receipt["contractAddress"],
+        "offchain_lookup_address": offchain_lookup_deploy_receipt[
+            "contractAddress"
+        ],
         "txn_hash_with_log": txn_hash_with_log,
         "block_hash_with_log": block_with_log["hash"],
         "empty_block_hash": empty_block["hash"],
@@ -352,7 +354,6 @@ def setup_chain_state(w3):
         "block_hash_revert_with_msg": block_hash_revert_with_msg["hash"],
         "block_hash_revert_no_msg": block_hash_revert_no_msg["hash"],
     }
-    return geth_fixture
 
 
 if __name__ == "__main__":

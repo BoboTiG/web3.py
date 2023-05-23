@@ -114,6 +114,4 @@ def is_supported_chain_id(chain_id: Any) -> bool:
     if not is_integer(chain_id):
         return False
 
-    if chain_id not in SUPPORTED_CHAIN_IDS.keys():
-        return False
-    return True
+    return chain_id in SUPPORTED_CHAIN_IDS.keys()

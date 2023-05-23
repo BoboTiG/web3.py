@@ -104,7 +104,7 @@ def filter_by_name(name: str, contract_abi: ABI) -> List[Union[ABIFunction, ABIE
 
 
 def get_abi_input_types(abi: ABIFunction) -> List[str]:
-    if "inputs" not in abi and (abi["type"] == "fallback" or abi["type"] == "receive"):
+    if "inputs" not in abi and abi["type"] in ["fallback", "receive"]:
         return []
     else:
         return [collapse_if_tuple(cast(Dict[str, Any], arg)) for arg in abi["inputs"]]
@@ -118,16 +118,14 @@ def get_abi_output_types(abi: ABIFunction) -> List[str]:
 
 
 def get_receive_func_abi(contract_abi: ABI) -> ABIFunction:
-    receive_abis = filter_by_type("receive", contract_abi)
-    if receive_abis:
+    if receive_abis := filter_by_type("receive", contract_abi):
         return cast(ABIFunction, receive_abis[0])
     else:
         raise FallbackNotFound("No receive function was found in the contract ABI.")
 
 
 def get_fallback_func_abi(contract_abi: ABI) -> ABIFunction:
-    fallback_abis = filter_by_type("fallback", contract_abi)
-    if fallback_abis:
+    if fallback_abis := filter_by_type("fallback", contract_abi):
         return cast(ABIFunction, fallback_abis[0])
     else:
         raise FallbackNotFound("No fallback function was found in the contract ABI.")
@@ -406,17 +404,13 @@ def merge_args_and_kwargs(
     sorted_arg_names = tuple(arg_abi["name"] for arg_abi in function_abi["inputs"])
     args_as_kwargs = dict(zip(sorted_arg_names, args))
 
-    # Check for duplicate args
-    duplicate_args = kwarg_names.intersection(args_as_kwargs.keys())
-    if duplicate_args:
+    if duplicate_args := kwarg_names.intersection(args_as_kwargs.keys()):
         raise TypeError(
             f"{function_abi.get('name')}() got multiple values for argument(s) "
             f"'{', '.join(duplicate_args)}'"
         )
 
-    # Check for unknown args
-    unknown_args = kwarg_names.difference(sorted_arg_names)
-    if unknown_args:
+    if unknown_args := kwarg_names.difference(sorted_arg_names):
         if function_abi.get("name"):
             raise TypeError(
                 f"{function_abi.get('name')}() got unexpected keyword argument(s)"
@@ -427,18 +421,14 @@ def merge_args_and_kwargs(
             f" '{', '.join(unknown_args)}'"
         )
 
-    # Sort args according to their position in the ABI and unzip them from their
-    # names
-    sorted_args = tuple(
+    if sorted_args := tuple(
         zip(
             *sorted(
                 itertools.chain(kwargs.items(), args_as_kwargs.items()),
                 key=lambda kv: sorted_arg_names.index(kv[0]),
             )
         )
-    )
-
-    if sorted_args:
+    ):
         return sorted_args[1]
     else:
         return tuple()
@@ -538,7 +528,7 @@ def get_constructor_abi(contract_abi: ABI) -> ABIFunction:
     candidates = [abi for abi in contract_abi if abi["type"] == "constructor"]
     if len(candidates) == 1:
         return candidates[0]
-    elif len(candidates) == 0:
+    elif not candidates:
         return None
     elif len(candidates) > 1:
         raise ValueError("Found multiple constructors.")
@@ -563,7 +553,8 @@ STATIC_TYPES = list(
 )
 
 BASE_TYPE_REGEX = "|".join(
-    (_type + "(?![a-z0-9])" for _type in itertools.chain(STATIC_TYPES, DYNAMIC_TYPES))
+    f"{_type}(?![a-z0-9])"
+    for _type in itertools.chain(STATIC_TYPES, DYNAMIC_TYPES)
 )
 
 SUB_TYPE_REGEX = r"\[" "[0-9]*" r"\]"
@@ -619,9 +610,7 @@ def size_of_type(abi_type: TypeStr) -> int:
         return None
     if abi_type == "bool":
         return 8
-    if abi_type == "address":
-        return 160
-    return int(re.sub(r"\D", "", abi_type))
+    return 160 if abi_type == "address" else int(re.sub(r"\D", "", abi_type))
 
 
 END_BRACKETS_OF_ARRAY_TYPE_REGEX = r"\[[^]]*\]$"
@@ -638,13 +627,10 @@ def length_of_array_type(abi_type: TypeStr) -> int:
     if not is_array_type(abi_type):
         raise ValueError(f"Cannot parse length of nonarray abi-type: {abi_type}")
 
-    inner_brackets = (
-        re.search(END_BRACKETS_OF_ARRAY_TYPE_REGEX, abi_type).group(0).strip("[]")
-    )
-    if not inner_brackets:
-        return None
-    else:
-        return int(inner_brackets)
+    inner_brackets = re.search(END_BRACKETS_OF_ARRAY_TYPE_REGEX, abi_type)[
+        0
+    ].strip("[]")
+    return None if not inner_brackets else int(inner_brackets)
 
 
 ARRAY_REGEX = ("^" "[a-zA-Z0-9_]+" "({sub_type})+" "$").format(sub_type=SUB_TYPE_REGEX)
@@ -680,14 +666,13 @@ def normalize_event_input_types(
 
 
 def abi_to_signature(abi: Union[ABIFunction, ABIEvent]) -> str:
-    function_signature = "{fn_name}({fn_input_types})".format(
+    return "{fn_name}({fn_input_types})".format(
         fn_name=abi["name"],
         fn_input_types=",".join(
             collapse_if_tuple(dict(arg))
             for arg in normalize_event_input_types(abi.get("inputs", []))
         ),
     )
-    return function_signature
 
 
 ########################################################
@@ -831,10 +816,7 @@ def abi_sub_tree(
 
 
 def strip_abi_type(elements: Any) -> Any:
-    if isinstance(elements, ABITypedData):
-        return elements.data
-    else:
-        return elements
+    return elements.data if isinstance(elements, ABITypedData) else elements
 
 
 def build_non_strict_registry() -> ABIRegistry:
@@ -931,9 +913,7 @@ def _named_subtree(
     if abi_type.is_array:
         item_type = abi_type.item_type.to_type_str()
         item_abi = {**abi, "type": item_type, "name": ""}
-        items = [_named_subtree(item_abi, item) for item in data]
-        return items
-
+        return [_named_subtree(item_abi, item) for item in data]
     elif isinstance(abi_type, TupleType):
         abi = cast(ABIFunctionParams, abi)
         names = [item["name"] for item in abi["components"]]
@@ -966,8 +946,12 @@ def recursive_dict_to_namedtuple(data: Dict[str, Any]) -> Tuple[Any, ...]:
 def abi_decoded_namedtuple_factory(
     fields: Tuple[Any, ...]
 ) -> Callable[..., Tuple[Any, ...]]:
-    class ABIDecodedNamedTuple(namedtuple("ABIDecodedNamedTuple", fields, rename=True)):  # type: ignore # noqa: E501
-        def __new__(self, args: Any) -> "ABIDecodedNamedTuple":
-            return super().__new__(self, *args)
+
+
+
+    class ABIDecodedNamedTuple((namedtuple("ABIDecodedNamedTuple", fields, rename=True))):  # type: ignore # noqa: E501
+        def __new__(cls, args: Any) -> "ABIDecodedNamedTuple":
+            return super().__new__(cls, *args)
+
 
     return ABIDecodedNamedTuple

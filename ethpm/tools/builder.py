@@ -200,9 +200,7 @@ def make_path_relative(path: str) -> str:
             "root directory."
         )
 
-    if path[:2] != "./":
-        return f"./{path}"
-    return path
+    return f"./{path}" if path[:2] != "./" else path
 
 
 def source_inliner(
@@ -596,10 +594,11 @@ def process_bytecode(link_refs: Dict[str, Any], bytecode: bytes) -> HexStr:
 
 @curry
 def replace_link_ref_in_bytecode(offset: int, length: int, bytecode: str) -> str:
-    new_bytes = (
-        bytecode[:offset] + "0" * length + bytecode[offset + length :]  # noqa: E203
+    return (
+        bytecode[:offset]
+        + "0" * length
+        + bytecode[offset + length :]  # noqa: E203
     )
-    return new_bytes
 
 
 # todo pull all bytecode linking/validating across py-ethpm into shared utils

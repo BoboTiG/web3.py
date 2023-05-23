@@ -58,42 +58,37 @@ def pytest_collection_modifyitems(items, config):
 
 @pytest.fixture(scope="module")
 def math_contract_factory(w3):
-    contract_factory = w3.eth.contract(
+    return w3.eth.contract(
         abi=MATH_CONTRACT_ABI, bytecode=MATH_CONTRACT_BYTECODE
     )
-    return contract_factory
 
 
 @pytest.fixture(scope="module")
 def emitter_contract_factory(w3):
-    contract_factory = w3.eth.contract(
+    return w3.eth.contract(
         abi=EMITTER_CONTRACT_ABI, bytecode=EMITTER_CONTRACT_BYTECODE
     )
-    return contract_factory
 
 
 @pytest.fixture(scope="module")
 def revert_contract_factory(w3):
-    contract_factory = w3.eth.contract(
+    return w3.eth.contract(
         abi=REVERT_CONTRACT_ABI, bytecode=REVERT_CONTRACT_BYTECODE
     )
-    return contract_factory
 
 
 @pytest.fixture(scope="module")
 def offchain_lookup_contract_factory(w3):
-    contract_factory = w3.eth.contract(
+    return w3.eth.contract(
         abi=OFFCHAIN_LOOKUP_ABI, bytecode=OFFCHAIN_LOOKUP_BYTECODE
     )
-    return contract_factory
 
 
 @pytest.fixture(scope="module")
 def async_offchain_lookup_contract_factory(async_w3):
-    contract_factory = async_w3.eth.contract(
+    return async_w3.eth.contract(
         abi=OFFCHAIN_LOOKUP_ABI, bytecode=OFFCHAIN_LOOKUP_BYTECODE
     )
-    return contract_factory
 
 
 @pytest.fixture(scope="module")

@@ -222,15 +222,8 @@ class ContractFunction(BaseContractFunction):
 
     def __call__(self, *args: Any, **kwargs: Any) -> "ContractFunction":
         clone = copy.copy(self)
-        if args is None:
-            clone.args = tuple()
-        else:
-            clone.args = args
-
-        if kwargs is None:
-            clone.kwargs = {}
-        else:
-            clone.kwargs = kwargs
+        clone.args = tuple() if args is None else args
+        clone.kwargs = {} if kwargs is None else kwargs
         clone._set_function_info()
         return clone
 

@@ -51,10 +51,7 @@ Munger = Callable[..., Any]
 def _apply_request_formatters(
     params: Any, request_formatters: Dict[RPCEndpoint, Callable[..., TReturn]]
 ) -> Tuple[Any, ...]:
-    if request_formatters:
-        formatted_params = pipe(params, request_formatters)
-        return formatted_params
-    return params
+    return pipe(params, request_formatters) if request_formatters else params
 
 
 def _munger_star_apply(fn: Callable[..., TReturn]) -> Callable[..., TReturn]:
@@ -188,13 +185,13 @@ class Method(Generic[TFunc]):
         # TODO: Create friendly error output.
         mungers_iter = iter(self.mungers)
         root_munger = next(mungers_iter)
-        munged_inputs = pipe(
+        return pipe(
             root_munger(module, *args, **kwargs),
             *map(
-                lambda m: _munger_star_apply(functools.partial(m, module)), mungers_iter
+                lambda m: _munger_star_apply(functools.partial(m, module)),
+                mungers_iter,
             ),
         )
-        return munged_inputs
 
     def process_params(
         self, module: "Module", *args: Any, **kwargs: Any

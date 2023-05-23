@@ -55,22 +55,10 @@ def test_tupleization_and_hashing(input, expected):
     assert hash(AttributeDict(input)) == hash(expected)
 
 
-@pytest.mark.parametrize(
-    "input, error",
-    (
-        (
-            AttributeDict(
-                {
-                    "myset": set({1, 2, 3}),
-                    "nested": AttributeDict({"mylst": (1, 2, 3, (1,), (2, 3))}),
-                }
-            ),
-            {
+@pytest.mark.parametrize("input, error", ((AttributeDict({"myset": {1, 2, 3}, "nested": AttributeDict({"mylst": (1, 2, 3, (1,), (2, 3))})}), {
                 "expected_exception": TypeError,
                 "match": "Found unhashable type 'set': {(1, 2, 3)}",
-            },
-        ),
-        (
+            }), (
             AttributeDict(
                 {
                     "mybytearray": bytearray((1, 2, 3)),
@@ -83,9 +71,7 @@ def test_tupleization_and_hashing(input, expected):
                     "Found unhashable type 'bytearray': bytearray(b'\\x01\\x02\\x03')"
                 ),
             },
-        ),
-    ),
-)
+        )))
 def test_tupleization_and_hashing_error(input, error):
     with pytest.raises(**error):
         assert hash(input)

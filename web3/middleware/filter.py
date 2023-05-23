@@ -96,14 +96,11 @@ def gen_bounded_segments(start: int, stop: int, step: int) -> Iterable[Tuple[int
     if start + step >= stop:
         yield (start, stop)
         return
-    for segment in zip(
-        range(start, stop - step + 1, step), range(start + step, stop + 1, step)
-    ):
-        yield segment
-
-    remainder = (stop - start) % step
-    #  Handle the remainder
-    if remainder:
+    yield from zip(
+        range(start, stop - step + 1, step),
+        range(start + step, stop + 1, step),
+    )
+    if remainder := (stop - start) % step:
         yield (stop - remainder, stop)
 
 
@@ -183,9 +180,7 @@ def iter_latest_block_ranges(
     (46, 50)
     """
     for latest_block in iter_latest_block(w3, to_block):
-        if latest_block is None:
-            yield (None, None)
-        elif from_block > latest_block:
+        if latest_block is None or from_block > latest_block:
             yield (None, None)
         else:
             yield (from_block, latest_block)
@@ -253,15 +248,13 @@ class RequestLogs:
     @property
     def to_block(self) -> BlockNumber:
         if self._to_block is None:
-            to_block = self.w3.eth.block_number
+            return self.w3.eth.block_number
         elif self._to_block == "latest":
-            to_block = self.w3.eth.block_number
+            return self.w3.eth.block_number
         elif is_string(self._to_block) and is_hex(self._to_block):
-            to_block = BlockNumber(hex_to_integer(self._to_block))  # type: ignore
+            return BlockNumber(hex_to_integer(self._to_block))
         else:
-            to_block = self._to_block
-
-        return to_block
+            return self._to_block
 
     def _get_filter_changes(self) -> Iterator[List[LogReceipt]]:
         for start, stop in iter_latest_block_ranges(
@@ -444,9 +437,7 @@ async def async_iter_latest_block_ranges(
     """
     latest_block_iterator = async_iter_latest_block(w3, to_block)
     async for latest_block in latest_block_iterator:
-        if latest_block is None:
-            yield (None, None)
-        elif from_block > latest_block:
+        if latest_block is None or from_block > latest_block:
             yield (None, None)
         else:
             yield (from_block, latest_block)
@@ -477,8 +468,7 @@ async def async_get_logs_multipart(
         params_with_none_dropped = cast(
             FilterParams, drop_items_with_none_value(params)
         )
-        next_logs = await w3.eth.get_logs(params_with_none_dropped)  # type: ignore
-        yield next_logs
+        yield await w3.eth.get_logs(params_with_none_dropped)
 
 
 class AsyncRequestLogs:
@@ -524,13 +514,11 @@ class AsyncRequestLogs:
     @property
     async def to_block(self) -> BlockNumber:
         if self._to_block is None or self._to_block == "latest":
-            to_block = await self.w3.eth.block_number  # type: ignore
+            return await self.w3.eth.block_number
         elif is_string(self._to_block) and is_hex(self._to_block):
-            to_block = BlockNumber(hex_to_integer(cast(HexStr, self._to_block)))
+            return BlockNumber(hex_to_integer(cast(HexStr, self._to_block)))
         else:
-            to_block = self._to_block
-
-        return to_block
+            return self._to_block
 
     async def _get_filter_changes(self) -> AsyncIterator[List[LogReceipt]]:
         self_from_block = await self.from_block
@@ -592,8 +580,7 @@ class AsyncRequestBlocks:
             self.w3, self.start_block, None
         )
         async for block_range in block_range_iter:
-            hash = await async_block_hashes_in_range(self.w3, block_range)
-            yield hash
+            yield await async_block_hashes_in_range(self.w3, block_range)
 
 
 async def async_block_hashes_in_range(

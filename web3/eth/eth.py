@@ -651,10 +651,7 @@ class Eth(BaseEth):
 
         ContractFactory = ContractFactoryClass.factory(self.w3, **kwargs)
 
-        if address:
-            return ContractFactory(address)
-        else:
-            return ContractFactory
+        return ContractFactory(address) if address else ContractFactory
 
     def set_contract_factory(
         self,

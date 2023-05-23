@@ -88,29 +88,29 @@ def construct_simple_cache_middleware(
         rpc_whitelist = SIMPLE_CACHE_RPC_WHITELIST
 
     def simple_cache_middleware(
-        make_request: Callable[[RPCEndpoint, Any], RPCResponse], _w3: "Web3"
-    ) -> Callable[[RPCEndpoint, Any], RPCResponse]:
+            make_request: Callable[[RPCEndpoint, Any], RPCResponse], _w3: "Web3"
+        ) -> Callable[[RPCEndpoint, Any], RPCResponse]:
         lock = threading.Lock()
 
         def middleware(method: RPCEndpoint, params: Any) -> RPCResponse:
-            if method in rpc_whitelist:
-                cache_key = generate_cache_key(
-                    f"{threading.get_ident()}:{(method, params)}"
-                )
-                cached_request = cache.get_cache_entry(cache_key)
-                if cached_request is not None:
-                    return cached_request
-
-                response = make_request(method, params)
-                if should_cache_fn(method, params, response):
-                    lock.acquire(blocking=False)
-                    try:
-                        cache.cache(cache_key, response)
-                    finally:
-                        lock.release()
-                return response
-            else:
+            if method not in rpc_whitelist:
                 return make_request(method, params)
+
+            cache_key = generate_cache_key(
+                f"{threading.get_ident()}:{(method, params)}"
+            )
+            cached_request = cache.get_cache_entry(cache_key)
+            if cached_request is not None:
+                return cached_request
+
+            response = make_request(method, params)
+            if should_cache_fn(method, params, response):
+                lock.acquire(blocking=False)
+                try:
+                    cache.cache(cache_key, response)
+                finally:
+                    lock.release()
+            return response
 
         return middleware
 

@@ -348,8 +348,7 @@ class ENS(BaseENS):
         node = raw_name_to_hash(name)
         normal_name = normalize_name(name)
 
-        r = self.resolver(normal_name)
-        if r:
+        if r := self.resolver(normal_name):
             if _resolver_supports_interface(r, GET_TEXT_INTERFACE_ID):
                 return r.caller.text(node, key)
             else:
@@ -392,8 +391,7 @@ class ENS(BaseENS):
 
         transaction_dict = merge({"from": owner}, transact)
 
-        r = self.resolver(normal_name)
-        if r:
+        if r := self.resolver(normal_name):
             if _resolver_supports_interface(r, GET_TEXT_INTERFACE_ID):
                 return r.functions.setText(node, key, value).transact(transaction_dict)
             else:
@@ -546,6 +544,9 @@ class ENS(BaseENS):
 
 
 def _resolver_supports_interface(resolver: "Contract", interface_id: HexStr) -> bool:
-    if not any("supportsInterface" in repr(func) for func in resolver.all_functions()):
+    if all(
+        "supportsInterface" not in repr(func)
+        for func in resolver.all_functions()
+    ):
         return False
     return resolver.caller.supportsInterface(interface_id)

@@ -64,7 +64,7 @@ def attach_modules(
                 Web3,
             )
 
-            if isinstance(parent_module, Web3) or isinstance(parent_module, AsyncWeb3):
+            if isinstance(parent_module, (Web3, AsyncWeb3)):
                 w3 = parent_module
 
         module_init_params = _validate_init_params_and_return_if_found(module_class)

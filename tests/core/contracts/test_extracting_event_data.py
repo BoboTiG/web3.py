@@ -573,11 +573,8 @@ def test_event_rich_log(
         processed_logs = event_instance.process_receipt(txn_receipt)
         assert len(processed_logs) == 1
         rich_log = processed_logs[0]
-    elif not process_receipt:
-        rich_log = event_instance.process_log(txn_receipt["logs"][0])
     else:
-        raise Exception("Unreachable!")
-
+        rich_log = event_instance.process_log(txn_receipt["logs"][0])
     assert rich_log["args"] == expected_args
     assert rich_log.args == expected_args
     for arg in expected_args:
@@ -836,11 +833,8 @@ def test_event_rich_log_non_strict(
         processed_logs = event_instance.process_receipt(txn_receipt)
         assert len(processed_logs) == 1
         rich_log = processed_logs[0]
-    elif not process_receipt:
-        rich_log = event_instance.process_log(txn_receipt["logs"][0])
     else:
-        raise Exception("Unreachable!")
-
+        rich_log = event_instance.process_log(txn_receipt["logs"][0])
     assert rich_log["args"] == expected_args
     assert rich_log.args == expected_args
     for arg in expected_args:
@@ -870,11 +864,8 @@ def test_event_rich_log_with_byte_args(
         processed_logs = event_instance.process_receipt(txn_receipt)
         assert len(processed_logs) == 1
         rich_log = processed_logs[0]
-    elif not process_receipt:
-        rich_log = event_instance.process_log(txn_receipt["logs"][0])
     else:
-        raise Exception("Unreachable!")
-
+        rich_log = event_instance.process_log(txn_receipt["logs"][0])
     expected_args = {
         "arg0": b'H\x7f\xad\xb3\x16zAS7\xa5\x0c\xfe\xe2%T\xb7\x17\x81p\xf04~\x8d(\x93\x8e\x19\x97k\xd9"1',  # noqa: E501
         "arg1": [b"54"],

@@ -84,10 +84,8 @@ def get_resolvable_backends_for_uri(
         for backend_class in ALL_URI_BACKENDS:
             if backend_class is default_ipfs:
                 continue
-            # type ignored because of conflict with instantiating BaseURIBackend
-            else:
-                try:
-                    if backend_class().can_resolve_uri(uri):  # type: ignore
-                        yield backend_class
-                except Exception as e:
-                    _handle_optional_ipfs_backend_exception(e)
+            try:
+                if backend_class().can_resolve_uri(uri):  # type: ignore
+                    yield backend_class
+            except Exception as e:
+                _handle_optional_ipfs_backend_exception(e)

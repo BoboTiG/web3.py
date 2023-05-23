@@ -36,8 +36,7 @@ def test_Eth_filter_creates_correct_filter_type(w3):
 @pytest_asyncio.fixture()
 async def async_w3():
     provider = AsyncEthereumTesterProvider()
-    w3 = Web3(provider, modules={"eth": [AsyncEth]}, middlewares=[])
-    return w3
+    return Web3(provider, modules={"eth": [AsyncEth]}, middlewares=[])
 
 
 @pytest.mark.asyncio

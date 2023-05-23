@@ -139,12 +139,7 @@ class BaseContractEvent:
     abi: ABIEvent = None
 
     def __init__(self, *argument_names: Tuple[str]) -> None:
-        if argument_names is None:
-            # https://github.com/python/mypy/issues/6283
-            self.argument_names = tuple()  # type: ignore
-        else:
-            self.argument_names = argument_names
-
+        self.argument_names = tuple() if argument_names is None else argument_names
         self.abi = self._get_event_abi()
 
     @classmethod
@@ -211,7 +206,7 @@ class BaseContractEvent:
             )
 
         if argument_filters is None:
-            argument_filters = dict()
+            argument_filters = {}
 
         _filters = dict(**argument_filters)
 
@@ -279,7 +274,7 @@ class BaseContractEvent:
             )
 
         if argument_filters is None:
-            argument_filters = dict()
+            argument_filters = {}
 
         _filters = dict(**argument_filters)
 
@@ -570,7 +565,7 @@ class BaseContractFunction:
             _repr = f"<Function {abi_to_signature(self.abi)}"
             if self.arguments is not None:
                 _repr += f" bound to {self.arguments!r}"
-            return _repr + ">"
+            return f"{_repr}>"
         return f"<Function {self.fn_name}>"
 
     @classmethod
@@ -829,9 +824,7 @@ class BaseContract:
     def _encode_constructor_data(
         cls, args: Optional[Any] = None, kwargs: Optional[Any] = None
     ) -> HexStr:
-        constructor_abi = get_constructor_abi(cls.abi)
-
-        if constructor_abi:
+        if constructor_abi := get_constructor_abi(cls.abi):
             if args is None:
                 args = tuple()
             if kwargs is None:
@@ -839,7 +832,7 @@ class BaseContract:
 
             arguments = merge_args_and_kwargs(constructor_abi, args, kwargs)
 
-            deploy_data = add_0x_prefix(
+            return add_0x_prefix(
                 encode_abi(cls.w3, constructor_abi, arguments, data=cls.bytecode)
             )
         else:
@@ -847,9 +840,7 @@ class BaseContract:
                 msg = "Constructor args were provided, but no constructor function was provided."  # noqa: E501
                 raise TypeError(msg)
 
-            deploy_data = to_hex(cls.bytecode)
-
-        return deploy_data
+            return to_hex(cls.bytecode)
 
     @combomethod
     def find_functions_by_identifier(
@@ -1012,22 +1003,18 @@ class BaseContractConstructor:
 
     @combomethod
     def _encode_data_in_transaction(self, *args: Any, **kwargs: Any) -> HexStr:
-        constructor_abi = get_constructor_abi(self.abi)
-
-        if constructor_abi:
+        if constructor_abi := get_constructor_abi(self.abi):
             if not args:
                 args = tuple()
             if not kwargs:
                 kwargs = {}
 
             arguments = merge_args_and_kwargs(constructor_abi, args, kwargs)
-            data = add_0x_prefix(
+            return add_0x_prefix(
                 encode_abi(self.w3, constructor_abi, arguments, data=self.bytecode)
             )
         else:
-            data = to_hex(self.bytecode)
-
-        return data
+            return to_hex(self.bytecode)
 
     @combomethod
     def _estimate_gas(self, transaction: Optional[TxParams] = None) -> TxParams:
@@ -1078,8 +1065,7 @@ class BaseContractConstructor:
     def check_forbidden_keys_in_transaction(
         transaction: TxParams, forbidden_keys: Optional[Collection[str]] = None
     ) -> None:
-        keys_found = transaction.keys() & forbidden_keys
-        if keys_found:
+        if keys_found := transaction.keys() & forbidden_keys:
             raise ValueError(
                 f"Cannot set '{', '.join(keys_found)}' field(s) in transaction"
             )

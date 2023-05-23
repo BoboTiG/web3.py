@@ -87,8 +87,7 @@ def get_response_from_get_request(
 ) -> requests.Response:
     kwargs.setdefault("timeout", DEFAULT_TIMEOUT)
     session = cache_and_return_session(endpoint_uri)
-    response = session.get(endpoint_uri, *args, **kwargs)
-    return response
+    return session.get(endpoint_uri, *args, **kwargs)
 
 
 def json_make_get_request(
@@ -104,8 +103,7 @@ def get_response_from_post_request(
 ) -> requests.Response:
     kwargs.setdefault("timeout", DEFAULT_TIMEOUT)
     session = cache_and_return_session(endpoint_uri)
-    response = session.post(endpoint_uri, *args, **kwargs)
-    return response
+    return session.post(endpoint_uri, *args, **kwargs)
 
 
 def make_post_request(
@@ -212,8 +210,7 @@ async def async_get_response_from_get_request(
 ) -> ClientResponse:
     kwargs.setdefault("timeout", ClientTimeout(DEFAULT_TIMEOUT))
     session = await async_cache_and_return_session(endpoint_uri)
-    response = await session.get(endpoint_uri, *args, **kwargs)
-    return response
+    return await session.get(endpoint_uri, *args, **kwargs)
 
 
 async def async_json_make_get_request(
@@ -229,8 +226,7 @@ async def async_get_response_from_post_request(
 ) -> ClientResponse:
     kwargs.setdefault("timeout", ClientTimeout(DEFAULT_TIMEOUT))
     session = await async_cache_and_return_session(endpoint_uri)
-    response = await session.post(endpoint_uri, *args, **kwargs)
-    return response
+    return await session.post(endpoint_uri, *args, **kwargs)
 
 
 async def async_make_post_request(
